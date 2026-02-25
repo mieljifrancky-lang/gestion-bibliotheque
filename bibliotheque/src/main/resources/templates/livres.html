@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livres - Bibliothèque</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+
+<body class="transition-colors duration-500 bg-gray-900 text-white" id="body">
+
+    <!-- Navbar / En-tête -->
+    <nav class="flex justify-between items-center p-4 bg-gray-800 shadow-lg relative z-20">
+        <div class="flex items-center space-x-6">
+            <h1 class="font-bold text-xl tracking-wider text-blue-400">Bibliothèque</h1>
+            <!-- Liens de navigation horizontaux -->
+            <div class="hidden md:flex space-x-4">
+                <a href="/dashboard"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Dashboard</a>
+                <a href="/livres"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 font-semibold transition bg-gray-700 text-blue-300">Livres</a>
+                <a href="/magazines"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Magazines</a>
+                <a href="/utilisateurs"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Utilisateurs</a>
+                <a href="/emprunts"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Emprunts</a>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4 relative">
+            <button id="theme-toggle" class="bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition"
+                title="Basculer le mode clair/sombre">
+                <i data-feather="sun"></i>
+            </button>
+
+            <!-- Menu Utilisateur (Déroulant) -->
+            <div class="relative">
+                <button id="user-menu-btn"
+                    class="flex items-center space-x-2 bg-gray-700 p-2 rounded-full hover:bg-gray-600 focus:outline-none transition">
+                    <i data-feather="user"></i>
+                    <i data-feather="chevron-down" class="w-4 h-4"></i>
+                </button>
+                <div id="user-dropdown"
+                    class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-xl py-1 hidden ring-1 ring-black ring-opacity-5">
+                    <div class="px-4 py-2 text-sm text-gray-400 border-b border-gray-700">Connecté en tant que Admin
+                    </div>
+                    <a href="/logout"
+                        class="block px-4 py-2 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 w-full text-left">Déconnexion</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu -->
+    <main id="main-content" class="min-h-screen p-8 relative transition-all duration-500"
+        style="background-image: url('/images/bibliothèque.jpg'); background-size: cover; background-blend-mode: overlay; background-color: rgba(0,0,0,0.7);">
+
+        <!-- En-tête de page -->
+        <div
+            class="mb-8 p-6 rounded-2xl bg-gray-800 bg-opacity-80 backdrop-blur-sm border border-gray-700 shadow-xl main-card transition-colors duration-500 flex justify-between items-center">
+            <div>
+                <h2
+                    class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+                    Gestion des Livres</h2>
+                <p class="text-gray-300 content-text mt-2">Gérez l'inventaire des livres de votre bibliothèque. Vous
+                    pouvez ajouter, rechercher ou supprimer des ouvrages.</p>
+            </div>
+            <button id="openAddModal"
+                class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-md font-semibold shadow-lg transition flex items-center gap-2">
+                <i data-feather="plus"></i> Ajouter un Livre
+            </button>
+        </div>
+
+        <!-- Recherche -->
+        <div class="mb-6">
+            <div class="relative max-w-md">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i data-feather="search" class="text-gray-400"></i>
+                </div>
+                <input type="text" id="searchInput" placeholder="Rechercher par titre, auteur, ISBN..."
+                    class="block w-full pl-10 p-3 rounded-lg border border-gray-600 bg-gray-700 text-white focus:ring-blue-500 focus:border-blue-500 transition shadow-sm placeholder-gray-400">
+            </div>
+        </div>
+
+        <!-- Tableau des livres -->
+        <div
+            class="overflow-hidden bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 stat-card transition-colors duration-500">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-700 text-left">
+                    <thead class="bg-gray-900 bg-opacity-50">
+                        <tr>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text">
+                                ID</th>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text">
+                                Titre</th>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text">
+                                Auteur</th>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text">
+                                ISBN</th>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text text-center">
+                                Statut</th>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text text-center">
+                                Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="livresTableBody"
+                        class="divide-y divide-gray-700 text-gray-200 content-text transition-colors duration-500">
+                        <!-- Les lignes sont injectées via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mini-modale pour ajouter un livre -->
+        <div id="addModal"
+            class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-opacity">
+            <div
+                class="bg-gray-800 p-8 rounded-2xl w-full max-w-md relative shadow-2xl border border-gray-600 main-card text-white content-text">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-2 border-b border-gray-700 pb-4">
+                    <i data-feather="book"></i> Nouveau Livre
+                </h3>
+                <form id="addLivreForm" class="flex flex-col space-y-4">
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Titre de l'ouvrage</label>
+                        <input type="text" name="titre"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Auteur principal</label>
+                        <input type="text" name="auteur"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Code ISBN</label>
+                        <input type="text" name="isbn"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Statut de disponibilité</label>
+                        <select name="disponible"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white">
+                            <option value="true">En Rayon (Disponible)</option>
+                            <option value="false">Déjà Emprunté</option>
+                        </select>
+                    </div>
+                    <button type="submit"
+                        class="mt-4 bg-emerald-600 hover:bg-emerald-700 p-3 rounded-lg font-bold shadow-lg transition">Enregistrer
+                        l'ouvrage</button>
+                    <button type="button" id="closeAddModal"
+                        class="absolute top-4 right-4 text-gray-400 hover:text-white transition"><i
+                            data-feather="x"></i></button>
+                </form>
+            </div>
+        </div>
+        <!-- Mini-modale pour éditer un livre -->
+        <div id="editModal"
+            class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-opacity">
+            <div
+                class="bg-gray-800 p-8 rounded-2xl w-full max-w-md relative shadow-2xl border border-gray-600 main-card text-white content-text">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-2 border-b border-gray-700 pb-4">
+                    <i data-feather="edit"></i> Modifier le Livre
+                </h3>
+                <form id="editLivreForm" class="flex flex-col space-y-4">
+                    <input type="hidden" name="id" id="editLivreId">
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Titre de l'ouvrage</label>
+                        <input type="text" name="titre" id="editTitre"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Auteur principal</label>
+                        <input type="text" name="auteur" id="editAuteur"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Code ISBN</label>
+                        <input type="text" name="isbn" id="editIsbn"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Statut de disponibilité</label>
+                        <select name="disponible" id="editDisponible"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white">
+                            <option value="true">En Rayon (Disponible)</option>
+                            <option value="false">Déjà Emprunté</option>
+                        </select>
+                    </div>
+                    <button type="submit"
+                        class="mt-4 bg-blue-600 hover:bg-blue-700 p-3 rounded-lg font-bold shadow-lg transition">Mettre
+                        à jour</button>
+                    <button type="button" id="closeEditModal"
+                        class="absolute top-4 right-4 text-gray-400 hover:text-white transition"><i
+                            data-feather="x"></i></button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modale "Emprunt Rapide" (affichée lorsqu'un livre est marqué comme emprunté) -->
+        <div id="quickEmpruntModal"
+            class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center hidden z-[60] transition-opacity">
+            <div
+                class="bg-gray-800 p-8 rounded-2xl w-full max-w-md relative shadow-2xl border border-gray-600 main-card text-white content-text">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-2 border-b border-gray-700 pb-4 text-blue-400">
+                    <i data-feather="calendar"></i> Enregistrer l'Emprunt
+                </h3>
+                <p class="text-sm text-gray-300 mb-4">Ce livre ayant été marqué comme "Déjà Emprunté", merci de préciser
+                    les détails ci-dessous.</p>
+
+                <form id="quickEmpruntForm" class="flex flex-col space-y-4">
+                    <input type="hidden" id="quickDocId">
+
+                    <!-- Sélection de l'Utilisateur -->
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Emprunteur</label>
+                        <select id="quickUserId" required
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white">
+                            <option value="">Sélectionner un utilisateur</option>
+                            <!-- Rempli par JS (fetchUtilisateursList) -->
+                        </select>
+                    </div>
+
+                    <!-- Date d'Emprunt -->
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Date d'emprunt</label>
+                        <input type="date" id="quickDateEmprunt" required
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white">
+                    </div>
+
+                    <!-- Date de Retour -->
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Date de retour prévue</label>
+                        <input type="date" id="quickDateRetour" required
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white">
+                    </div>
+
+                    <button type="button" id="quickEmpruntBtn"
+                        class="mt-4 bg-blue-600 hover:bg-blue-700 p-3 rounded-lg font-bold shadow-lg transition">Valider
+                        l'emprunt</button>
+                    <!-- Pas de bouton fermeture simple pour forcer l'action, ou on peut le rajouter si on veut laisser l'utilisateur annuler, mais le livre restera "indisponible". -->
+                    <button type="button" id="closeQuickModal"
+                        class="absolute top-4 right-4 text-gray-400 hover:text-white transition"
+                        title="Ignorer et fermer"><i data-feather="x"></i></button>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="/js/dashboard.js?v=2"></script>
+    <script>
+        feather.replace();
+
+        // Modal
+        const addModal = document.getElementById('addModal');
+        document.getElementById('openAddModal').addEventListener('click', () => addModal.classList.remove('hidden'));
+        document.getElementById('closeAddModal').addEventListener('click', () => addModal.classList.add('hidden'));
+
+        // Récupération et affichage dynamique des livres
+        const livresTableBody = document.getElementById('livresTableBody');
+
+        function fetchLivres() {
+            fetch("/api/documents/livres")
+                .then(response => response.json())
+                .then(data => {
+                    livresTableBody.innerHTML = '';
+
+                    // --- TRI par ID croissant ---
+                    data.sort((a, b) => a.id - b.id);
+
+                    data.forEach(livre => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                        <td class="px-4 py-2">${livre.id}</td>
+                        <td class="px-4 py-2">${livre.titre}</td>
+                        <td class="px-4 py-2">${livre.auteur}</td>
+                        <td class="px-4 py-2">${livre.isbn}</td>
+                        <td class="px-4 py-2">
+                            ${livre.disponible
+                                ? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-500 text-white">Oui</span>'
+                                : '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-500 text-white">Non</span>'}
+                        </td>
+                        <td class="px-4 py-2 text-center text-gray-400">
+                            <!-- Actions boutons (Edit/Delete) -->
+                            <button class="hover:text-blue-500" onclick="window.openEditModal(${livre.id})"><i data-feather="edit-2" class="pointer-events-none"></i></button>
+                            <button class="hover:text-red-500 ml-2" onclick="window.deleteLivre(${livre.id})"><i data-feather="trash-2" class="pointer-events-none"></i></button>
+                        </td>
+                    `;
+                        livresTableBody.appendChild(row);
+                    });
+                    feather.replace(); // re-render icons if any new ones are added
+                })
+                .catch(error => console.error('Erreur lors de la récupération des livres:', error));
+        }
+
+        // ---- GESTION EMPRUNT EXPRESS (MODALE) ----
+        const quickEmpruntModal = document.getElementById('quickEmpruntModal');
+        const quickEmpruntForm = document.getElementById('quickEmpruntForm');
+        document.getElementById('closeQuickModal').addEventListener('click', () => quickEmpruntModal.classList.add('hidden'));
+
+        // Pré-charger la liste des utilisateurs pour la modale express
+        function fetchUtilisateursForQuickAction() {
+            fetch('/api/utilisateurs')
+                .then(res => res.json())
+                .then(users => {
+                    const select = document.getElementById('quickUserId');
+                    select.innerHTML = '<option value="">Sélectionner un emprunteur...</option>';
+                    // Tri optionnel des utilisateurs par nom ou ID :
+                    users.sort((a, b) => a.id - b.id);
+                    users.forEach(u => {
+                        select.innerHTML += `<option value="${u.id}">${u.prenom} ${u.nom}</option>`;
+                    });
+                })
+                .catch(err => console.error("Erreur chargement utilisateurs: ", err));
+        }
+
+        // Appelée lors d'un ajout/modification si on met le statut "Emprunté"
+        function creerEmpruntAutomatique(documentId) {
+            // S'assurer que la liste des utilisateurs est toujours à jour
+            fetchUtilisateursForQuickAction();
+
+            // 1. Pré-remplir la date du jour
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('quickDateEmprunt').value = today;
+            document.getElementById('quickDateRetour').value = ""; // Vider
+
+            // 2. Stocker l'ID du document caché
+            document.getElementById('quickDocId').value = documentId;
+
+            // 3. Afficher la modale
+            quickEmpruntModal.classList.remove('hidden');
+        }
+
+        document.getElementById('quickEmpruntBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const userIdElt = document.getElementById('quickUserId').value;
+            const docIdElt = document.getElementById('quickDocId').value;
+            const dateEmpElt = document.getElementById('quickDateEmprunt').value;
+            const dateRetElt = document.getElementById('quickDateRetour').value;
+
+            if (!userIdElt || !dateEmpElt || !dateRetElt) {
+                alert("Veuillez remplir tous les champs obligatoires (Emprunteur, dates).");
+                return;
+            }
+
+            const formatYMD = (d) => new Date(d).toISOString().split('T')[0];
+
+            const empruntData = {
+                utilisateur: { id: parseInt(userIdElt, 10) },
+                document: {
+                    id: parseInt(docIdElt, 10),
+                    type: 'Livre'
+                },
+                dateEmprunt: formatYMD(dateEmpElt),
+                dateRetour: formatYMD(dateRetElt),
+                rendu: false
+            };
+
+            console.log("Submitting Emprunt:", JSON.stringify(empruntData));
+
+            fetch('/api/emprunts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(empruntData)
+            })
+                .then(async res => {
+                    if (res.ok) {
+                        alert("Génial ! L'emprunt a été enregistré avec succès en arrière-plan.");
+                        quickEmpruntModal.classList.add('hidden');
+                        quickEmpruntForm.reset();
+                    } else {
+                        const err = await res.text();
+                        alert("Erreur Code " + res.status + " : \n" + err + "\n\nPayload envoyé: " + JSON.stringify(empruntData));
+                    }
+                })
+                .catch(err => alert("Erreur soumission quick emprunt: " + err));
+        });
+
+        // Appels initiaux
+        fetchLivres();
+        fetchUtilisateursForQuickAction();
+
+        // Ajouter un livre
+        const addLivreForm = document.getElementById('addLivreForm');
+        addLivreForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(addLivreForm);
+            const livreData = {
+                type: 'Livre', // IMPORTANT pour l'héritage JPA si Document est la classe mère
+                titre: formData.get('titre'),
+                auteur: formData.get('auteur'),
+                isbn: formData.get('isbn'),
+                disponible: formData.get('disponible') === 'true'
+            };
+
+            fetch('/api/documents/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(livreData)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json(); // Récupérer le livre créé avec son ID
+                    } else {
+                        throw new Error("Erreur de l'API");
+                    }
+                })
+                .then(savedLivre => {
+                    alert("Le livre a été ajouté avec succès !");
+                    addLivreForm.reset();
+                    addModal.classList.add('hidden');
+                    fetchLivres(); // Rafraîchir la liste
+
+                    // Création de l'emprunt automatique si défini comme non disponible
+                    if (!savedLivre.disponible) {
+                        creerEmpruntAutomatique(savedLivre.id);
+                    }
+                })
+                .catch(error => {
+                    alert("Erreur lors de l'ajout du livre.");
+                    console.error("Erreur réseau / ajout :", error);
+                });
+        });
+
+        // Supprimer un livre
+        window.deleteLivre = function (id) {
+            if (confirm("Voulez-vous vraiment supprimer ce livre ?")) {
+                fetch(`/api/documents/${id}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            alert("Le livre a été supprimé avec succès.");
+                            fetchLivres();
+                        } else {
+                            alert("Erreur lors de la suppression du livre.");
+                        }
+                    })
+                    .catch(error => console.error('Erreur lors de la suppression:', error));
+            }
+        }
+        // --- ÉDITION d'un livre ---
+        const editModal = document.getElementById('editModal');
+        document.getElementById('closeEditModal').addEventListener('click', () => editModal.classList.add('hidden'));
+
+        window.openEditModal = function (id) {
+            // 1. Récupérer les données du livre par son ID
+            fetch(`/api/documents/${id}`)
+                .then(response => response.json())
+                .then(livre => {
+                    // 2. Remplir le formulaire
+                    document.getElementById('editLivreId').value = livre.id;
+                    document.getElementById('editTitre').value = livre.titre;
+                    document.getElementById('editAuteur').value = livre.auteur;
+                    document.getElementById('editIsbn').value = livre.isbn;
+                    document.getElementById('editDisponible').value = livre.disponible ? "true" : "false";
+
+                    // 3. Afficher la modale
+                    editModal.classList.remove('hidden');
+                })
+                .catch(error => console.error("Erreur récupération livre pour édition:", error));
+        }
+
+        const editLivreForm = document.getElementById('editLivreForm');
+        editLivreForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('editLivreId').value;
+            const updatedLivreData = {
+                id: parseInt(id),
+                type: 'Livre',
+                titre: document.getElementById('editTitre').value,
+                auteur: document.getElementById('editAuteur').value,
+                isbn: document.getElementById('editIsbn').value,
+                disponible: document.getElementById('editDisponible').value === 'true'
+            };
+
+            // Requête PUT pour mettre à jour
+            fetch(`/api/documents/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedLivreData)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert("Le livre a été mis à jour avec succès !");
+                        editModal.classList.add('hidden');
+                        fetchLivres(); // Rafraîchit le tableau avec les nouvelles valeurs
+
+                        // Si on modifie le livre pour le rendre "Emprunté"
+                        if (!updatedLivreData.disponible) {
+                            creerEmpruntAutomatique(updatedLivreData.id);
+                        }
+                    } else {
+                        alert("Erreur lors de la modification du livre.");
+                        console.error("Erreur lors de la modification");
+                    }
+                })
+                .catch(error => console.error('Erreur réseau / édition:', error));
+        });
+    </script>
+</body>
+
+</html>

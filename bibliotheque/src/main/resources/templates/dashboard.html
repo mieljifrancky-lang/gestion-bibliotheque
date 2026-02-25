@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Bibliothèque</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script> <!-- Pour les icônes -->
+</head>
+
+<body class="transition-colors duration-500 bg-gray-900 text-white" id="body">
+
+    <!-- Navbar / En-tête -->
+    <nav class="flex justify-between items-center p-4 bg-gray-800 shadow-lg relative z-20">
+        <div class="flex items-center space-x-6">
+            <h1 class="font-bold text-xl tracking-wider text-blue-400">Bibliothèque</h1>
+            <!-- Liens de navigation horizontaux -->
+            <div class="hidden md:flex space-x-4">
+                <a href="/dashboard"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 font-semibold transition bg-gray-700 text-blue-300">Dashboard</a>
+                <a href="/livres"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Livres</a>
+                <a href="/magazines"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Magazines</a>
+                <a href="/utilisateurs"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Utilisateurs</a>
+                <a href="/emprunts"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Emprunts</a>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4 relative">
+            <button id="theme-toggle" class="bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition"
+                title="Basculer le mode clair/sombre">
+                <i data-feather="sun"></i>
+            </button>
+
+            <!-- Menu Utilisateur (Déroulant) -->
+            <div class="relative">
+                <button id="user-menu-btn"
+                    class="flex items-center space-x-2 bg-gray-700 p-2 rounded-full hover:bg-gray-600 focus:outline-none transition">
+                    <i data-feather="user"></i>
+                    <i data-feather="chevron-down" class="w-4 h-4"></i>
+                </button>
+                <!-- Popup Dropdown -->
+                <div id="user-dropdown"
+                    class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-xl py-1 hidden ring-1 ring-black ring-opacity-5">
+                    <div class="px-4 py-2 text-sm text-gray-400 border-b border-gray-700">Connecté en tant que Admin
+                    </div>
+                    <a href="/logout"
+                        class="block px-4 py-2 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 w-full text-left">Déconnexion</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <!-- Note sur le style: l'overlay sombre rgba(0,0,0,0.7) sera retiré par JS en mode clair -->
+    <main id="main-content" class="min-h-screen p-8 relative transition-all duration-500"
+        style="background-image: url('/images/bibliothèque.jpg'); background-size: cover; background-blend-mode: overlay; background-color: rgba(0,0,0,0.7);">
+
+        <!-- Encart de bienvenue -->
+        <div
+            class="mb-10 p-8 rounded-2xl bg-gray-800 bg-opacity-80 backdrop-blur-sm border border-gray-700 shadow-2xl main-card transition-colors duration-500">
+            <h2
+                class="text-4xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+                Bienvenue dans votre Pôle de Gestion</h2>
+            <p class="text-lg text-gray-300 mb-2 content-text">Ce tableau de bord vous offre une vue globale et en temps
+                réel de l'état de la bibliothèque.</p>
+            <p class="text-md text-gray-400 content-text">Naviguez via le menu ci-dessus pour gérer vos ressources
+                (livres, magazines), vos membres et les transactions d'emprunt.</p>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Total Livres -->
+            <div
+                class="bg-gray-800 bg-opacity-90 rounded-2xl p-6 flex flex-col items-center justify-center shadow-xl hover:-translate-y-2 transform transition-all duration-300 border border-gray-700 stat-card">
+                <h3 class="text-xl font-bold mb-4 text-gray-200">Inventaire Livres</h3>
+                <canvas id="livresChart" width="180" height="180"></canvas>
+                <p class="mt-4 text-sm text-gray-400 text-center content-text">Répartition globale des livres
+                    actuellement en rayon versus ceux en cours de lecture.</p>
+            </div>
+
+            <!-- Total Magazines -->
+            <div
+                class="bg-gray-800 bg-opacity-90 rounded-2xl p-6 flex flex-col items-center justify-center shadow-xl hover:-translate-y-2 transform transition-all duration-300 border border-gray-700 stat-card">
+                <h3 class="text-xl font-bold mb-4 text-gray-200">Kiosque Magazines</h3>
+                <canvas id="magazinesChart" width="180" height="180"></canvas>
+                <p class="mt-4 text-sm text-gray-400 text-center content-text">Visualisation de la disponibilité des
+                    revues périodiques.</p>
+            </div>
+
+            <!-- Emprunts -->
+            <div
+                class="bg-gray-800 bg-opacity-90 rounded-2xl p-6 flex flex-col items-center justify-center shadow-xl hover:-translate-y-2 transform transition-all duration-300 border border-gray-700 stat-card">
+                <h3 class="text-xl font-bold mb-4 text-gray-200">Mouvements Emprunts</h3>
+                <canvas id="empruntsChart" width="180" height="180"></canvas>
+                <p class="mt-4 text-sm text-gray-400 text-center content-text">Suivi de l'activité: part des emprunts
+                    toujours actifs contre ceux déjà restitués.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/dashboard.js"></script>
+    <script>
+        feather.replace();
+
+        // Gestion du menu utilisateur
+        const userMenuBtn = document.getElementById('user-menu-btn');
+        const userDropdown = document.getElementById('user-dropdown');
+
+        userMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userDropdown.classList.toggle('hidden');
+        });
+
+        // Fermer le menu si on clique ailleurs
+        document.addEventListener('click', () => {
+            if (!userDropdown.classList.contains('hidden')) {
+                userDropdown.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>

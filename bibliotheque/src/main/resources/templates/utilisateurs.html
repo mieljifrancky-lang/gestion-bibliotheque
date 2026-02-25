@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Utilisateurs - Bibliothèque</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+
+<body class="transition-colors duration-500 bg-gray-900 text-white" id="body">
+
+    <!-- Navbar / En-tête -->
+    <nav class="flex justify-between items-center p-4 bg-gray-800 shadow-lg relative z-20">
+        <div class="flex items-center space-x-6">
+            <h1 class="font-bold text-xl tracking-wider text-blue-400">Bibliothèque</h1>
+            <!-- Liens de navigation horizontaux -->
+            <div class="hidden md:flex space-x-4">
+                <a href="/dashboard"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Dashboard</a>
+                <a href="/livres"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Livres</a>
+                <a href="/magazines"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Magazines</a>
+                <a href="/utilisateurs"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 font-semibold transition bg-gray-700 text-blue-300">Utilisateurs</a>
+                <a href="/emprunts"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Emprunts</a>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4 relative">
+            <button id="theme-toggle" class="bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition"
+                title="Basculer le mode clair/sombre">
+                <i data-feather="sun"></i>
+            </button>
+
+            <!-- Menu Utilisateur (Déroulant) -->
+            <div class="relative">
+                <button id="user-menu-btn"
+                    class="flex items-center space-x-2 bg-gray-700 p-2 rounded-full hover:bg-gray-600 focus:outline-none transition">
+                    <i data-feather="user"></i>
+                    <i data-feather="chevron-down" class="w-4 h-4"></i>
+                </button>
+                <div id="user-dropdown"
+                    class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-xl py-1 hidden ring-1 ring-black ring-opacity-5">
+                    <div class="px-4 py-2 text-sm text-gray-400 border-b border-gray-700">Connecté en tant que Admin
+                    </div>
+                    <a href="/logout"
+                        class="block px-4 py-2 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 w-full text-left">Déconnexion</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu -->
+    <main id="main-content" class="min-h-screen p-8 relative transition-all duration-500"
+        style="background-image: url('/images/bibliothèque.jpg'); background-size: cover; background-blend-mode: overlay; background-color: rgba(0,0,0,0.7);">
+
+        <!-- En-tête de page -->
+        <div
+            class="mb-8 p-6 rounded-2xl bg-gray-800 bg-opacity-80 backdrop-blur-sm border border-gray-700 shadow-xl main-card transition-colors duration-500 flex justify-between items-center">
+            <div>
+                <h2
+                    class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+                    Gestion des Utilisateurs</h2>
+                <p class="text-gray-300 content-text mt-2">Gérez les comptes utilisateurs de la bibliothèque. Vous
+                    pouvez ajouter, rechercher ou supprimer des utilisateurs.</p>
+            </div>
+            <button id="openAddModal"
+                class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-md font-semibold shadow-lg transition flex items-center gap-2">
+                <i data-feather="plus"></i> Ajouter un Utilisateur
+            </button>
+        </div>
+
+        <!-- Recherche -->
+        <div class="mb-6">
+            <div class="relative max-w-md">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i data-feather="search" class="text-gray-400"></i>
+                </div>
+                <input type="text" id="searchInput" placeholder="Rechercher par nom, prénom, email..."
+                    class="block w-full pl-10 p-3 rounded-lg border border-gray-600 bg-gray-700 text-white focus:ring-blue-500 focus:border-blue-500 transition shadow-sm placeholder-gray-400">
+            </div>
+        </div>
+
+        <!-- Tableau des utilisateurs -->
+        <div
+            class="overflow-hidden bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 stat-card transition-colors duration-500">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-700 text-left">
+                    <thead class="bg-gray-900 bg-opacity-50">
+                        <tr>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text">
+                                ID</th>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text">
+                                Nom</th>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text">
+                                Prénom</th>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text">
+                                Email</th>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text text-center">
+                                Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody"
+                        class="divide-y divide-gray-700 text-gray-200 content-text transition-colors duration-500">
+                        <!-- Les lignes sont injectées via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mini-modale pour ajouter un utilisateur -->
+        <div id="addModal"
+            class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-opacity">
+            <div
+                class="bg-gray-800 p-8 rounded-2xl w-full max-w-md relative shadow-2xl border border-gray-600 main-card text-white content-text">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-2 border-b border-gray-700 pb-4">
+                    <i data-feather="user-plus"></i> Nouvel Utilisateur
+                </h3>
+                <form id="addUserForm" class="flex flex-col space-y-4">
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Nom</label>
+                        <input type="text" name="nom"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Prénom</label>
+                        <input type="text" name="prenom"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Email</label>
+                        <input type="email" name="email"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Mot de passe</label>
+                        <input type="password" name="password"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <button type="submit"
+                        class="mt-4 bg-emerald-600 hover:bg-emerald-700 p-3 rounded-lg font-bold shadow-lg transition">Enregistrer
+                        l'utilisateur</button>
+                    <button type="button" id="closeAddModal"
+                        class="absolute top-4 right-4 text-gray-400 hover:text-white transition"><i
+                            data-feather="x"></i></button>
+                </form>
+            </div>
+        </div>
+        <!-- Mini-modale pour modifier un utilisateur -->
+        <div id="editModal"
+            class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-opacity">
+            <div
+                class="bg-gray-800 p-8 rounded-2xl w-full max-w-md relative shadow-2xl border border-gray-600 main-card text-white content-text">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-2 border-b border-gray-700 pb-4">
+                    <i data-feather="edit"></i> Modifier Utilisateur
+                </h3>
+                <form id="editUserForm" class="flex flex-col space-y-4">
+                    <input type="hidden" name="id" id="editUserId">
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Nom</label>
+                        <input type="text" name="nom" id="editNom"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Prénom</label>
+                        <input type="text" name="prenom" id="editPrenom"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Email</label>
+                        <input type="email" name="email" id="editEmail"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Nouveau mot de passe
+                            (optionnel)</label>
+                        <input type="password" name="password" id="editPassword"
+                            placeholder="Laissez vide pour ne pas changer"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white">
+                    </div>
+                    <button type="submit"
+                        class="mt-4 bg-blue-600 hover:bg-blue-700 p-3 rounded-lg font-bold shadow-lg transition">Mettre
+                        à jour</button>
+                    <button type="button" id="closeEditModal"
+                        class="absolute top-4 right-4 text-gray-400 hover:text-white transition"><i
+                            data-feather="x"></i></button>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="/js/dashboard.js?v=2"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            feather.replace();
+            const addModal = document.getElementById('addModal');
+            document.getElementById('openAddModal').addEventListener('click', () => addModal.classList.remove('hidden'));
+            document.getElementById('closeAddModal').addEventListener('click', () => addModal.classList.add('hidden'));
+
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    const filter = searchInput.value.toLowerCase();
+                    document.querySelectorAll('#usersTableBody tr').forEach(row => {
+                        row.style.display = Array.from(row.children).some(td => td.textContent.toLowerCase().includes(filter)) ? '' : 'none';
+                    });
+                });
+            }
+
+            // --- REQUÊTES API ---
+            const usersTableBody = document.getElementById('usersTableBody');
+
+            // 1. Récupérer et afficher les utilisateurs
+            function fetchUsers() {
+                fetch('/api/utilisateurs')
+                    .then(response => response.json())
+                    .then(data => {
+                        usersTableBody.innerHTML = '';
+
+                        // --- TRI par ID croissant ---
+                        data.sort((a, b) => a.id - b.id);
+
+                        data.forEach(user => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                        <td class="px-4 py-2">${user.id}</td>
+                        <td class="px-4 py-2">${user.nom}</td>
+                        <td class="px-4 py-2">${user.prenom}</td>
+                        <td class="px-4 py-2">${user.email}</td>
+                            <!-- Actions boutons (Edit/Delete) -->
+                            <button class="hover:text-blue-500" onclick="window.openEditModal(${user.id})"><i data-feather="edit-2" class="pointer-events-none"></i></button>
+                            <button class="hover:text-red-500 ml-2" onclick="window.deleteUser(${user.id})"><i data-feather="trash-2" class="pointer-events-none"></i></button>
+                    `;
+                            usersTableBody.appendChild(row);
+                        });
+                        feather.replace();
+                    })
+                    .catch(error => console.error('Erreur fetchUsers:', error));
+            }
+
+            // Exposer fetchUsers à window pour deleteUser
+            window.fetchUsers = fetchUsers;
+
+            // Charger au démarrage
+            fetchUsers();
+
+            // 2. Ajouter un utilisateur
+            const addUserForm = document.getElementById('addUserForm');
+            if (addUserForm) {
+                addUserForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+
+                    const formData = new FormData(addUserForm);
+                    const userData = {
+                        nom: formData.get('nom'),
+                        prenom: formData.get('prenom'),
+                        email: formData.get('email'),
+                        password: formData.get('password')
+                    };
+
+                    fetch('/api/utilisateurs', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(userData)
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                alert("L'utilisateur a été ajouté avec succès !");
+                                addUserForm.reset();
+                                addModal.classList.add('hidden');
+                                fetchUsers();
+                            } else {
+                                alert("Erreur lors de l'ajout de l'utilisateur.");
+                                console.error("Erreur ajout utilisateur");
+                            }
+                        })
+                        .catch(err => console.error("Erreur POST:", err));
+                });
+            }
+            // 3. Modifier un utilisateur
+            const editModal = document.getElementById('editModal');
+            document.getElementById('closeEditModal').addEventListener('click', () => editModal.classList.add('hidden'));
+
+            window.openEditModal = function (id) {
+                fetch(`/api/utilisateurs/${id}`)
+                    .then(response => response.json())
+                    .then(user => {
+                        document.getElementById('editUserId').value = user.id;
+                        document.getElementById('editNom').value = user.nom;
+                        document.getElementById('editPrenom').value = user.prenom;
+                        document.getElementById('editEmail').value = user.email;
+                        document.getElementById('editPassword').value = ''; // On ne préremplit pas le mdp par sécurité
+                        editModal.classList.remove('hidden');
+                    })
+                    .catch(error => console.error("Erreur récupération user pour édition:", error));
+            };
+
+            const editUserForm = document.getElementById('editUserForm');
+            if (editUserForm) {
+                editUserForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+
+                    const id = document.getElementById('editUserId').value;
+                    const passwordValue = document.getElementById('editPassword').value;
+
+                    const updatedUserData = {
+                        id: parseInt(id),
+                        nom: document.getElementById('editNom').value,
+                        prenom: document.getElementById('editPrenom').value,
+                        email: document.getElementById('editEmail').value
+                    };
+
+                    // N'inclure le mdp que s'il a été saisi
+                    if (passwordValue.trim() !== '') {
+                        updatedUserData.password = passwordValue;
+                    }
+
+                    fetch(`/api/utilisateurs/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedUserData)
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                alert("L'utilisateur a été mis à jour avec succès !");
+                                editModal.classList.add('hidden');
+                                fetchUsers();
+                            } else {
+                                alert("Erreur lors de la modification de l'utilisateur.");
+                                console.error("Erreur lors de la modification");
+                            }
+                        })
+                        .catch(error => console.error('Erreur réseau / édition:', error));
+                });
+            }
+        });
+
+        // 4. Supprimer un utilisateur (global scope for onclick)
+        window.deleteUser = function (id) {
+            if (confirm("Voulez-vous vraiment supprimer cet utilisateur ?")) {
+                fetch(`/api/utilisateurs/${id}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (response.ok) {
+                            alert("L'utilisateur a été supprimé avec succès.");
+                            if (window.fetchUsers) {
+                                window.fetchUsers();
+                            } else {
+                                location.reload();
+                            }
+                        } else {
+                            alert("Erreur lors de la suppression de l'utilisateur.");
+                        }
+                    });
+            }
+        }
+    </script>
+</body>
+
+</html>

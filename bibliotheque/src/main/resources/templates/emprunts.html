@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emprunts - Bibliothèque</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+
+<body class="transition-colors duration-500 bg-gray-900 text-white" id="body">
+
+    <!-- Navbar / En-tête -->
+    <nav class="flex justify-between items-center p-4 bg-gray-800 shadow-lg relative z-20">
+        <div class="flex items-center space-x-6">
+            <h1 class="font-bold text-xl tracking-wider text-blue-400">Bibliothèque</h1>
+            <!-- Liens de navigation horizontaux -->
+            <div class="hidden md:flex space-x-4">
+                <a href="/dashboard"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Dashboard</a>
+                <a href="/livres"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Livres</a>
+                <a href="/magazines"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Magazines</a>
+                <a href="/utilisateurs"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 transition">Utilisateurs</a>
+                <a href="/emprunts"
+                    class="px-3 py-2 rounded-md hover:bg-gray-700 hover:text-blue-300 font-semibold transition bg-gray-700 text-blue-300">Emprunts</a>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4 relative">
+            <button id="theme-toggle" class="bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition"
+                title="Basculer le mode clair/sombre">
+                <i data-feather="sun"></i>
+            </button>
+
+            <!-- Menu Utilisateur (Déroulant) -->
+            <div class="relative">
+                <button id="user-menu-btn"
+                    class="flex items-center space-x-2 bg-gray-700 p-2 rounded-full hover:bg-gray-600 focus:outline-none transition">
+                    <i data-feather="user"></i>
+                    <i data-feather="chevron-down" class="w-4 h-4"></i>
+                </button>
+                <div id="user-dropdown"
+                    class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-xl py-1 hidden ring-1 ring-black ring-opacity-5">
+                    <div class="px-4 py-2 text-sm text-gray-400 border-b border-gray-700">Connecté en tant que Admin
+                    </div>
+                    <a href="/logout"
+                        class="block px-4 py-2 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 w-full text-left">Déconnexion</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu -->
+    <main id="main-content" class="min-h-screen p-8 relative transition-all duration-500"
+        style="background-image: url('/images/bibliothèque.jpg'); background-size: cover; background-blend-mode: overlay; background-color: rgba(0,0,0,0.7);">
+
+        <!-- En-tête de page -->
+        <div
+            class="mb-8 p-6 rounded-2xl bg-gray-800 bg-opacity-80 backdrop-blur-sm border border-gray-700 shadow-xl main-card transition-colors duration-500 flex justify-between items-center">
+            <div>
+                <h2
+                    class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+                    Gestion des Emprunts</h2>
+                <p class="text-gray-300 content-text mt-2">Gérez les emprunts de documents de votre bibliothèque. Vous
+                    pouvez ajouter, rechercher ou clôturer des emprunts.</p>
+            </div>
+            <button id="openAddModal"
+                class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-md font-semibold shadow-lg transition flex items-center gap-2">
+                <i data-feather="plus"></i> Ajouter un Emprunt
+            </button>
+        </div>
+
+        <!-- Recherche -->
+        <div class="mb-6">
+            <div class="relative max-w-md">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i data-feather="search" class="text-gray-400"></i>
+                </div>
+                <input type="text" id="searchInput" placeholder="Rechercher par utilisateur, document..."
+                    class="block w-full pl-10 p-3 rounded-lg border border-gray-600 bg-gray-700 text-white focus:ring-blue-500 focus:border-blue-500 transition shadow-sm placeholder-gray-400">
+            </div>
+        </div>
+
+        <!-- Tableau des emprunts -->
+        <div
+            class="overflow-hidden bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 stat-card transition-colors duration-500">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-700 text-left">
+                    <thead class="bg-gray-900 bg-opacity-50">
+                        <tr>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text">
+                                ID</th>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text">
+                                Utilisateur</th>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text">
+                                Document</th>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text whitespace-nowrap">
+                                Date Emprunt</th>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text whitespace-nowrap">
+                                Date Retour</th>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text text-center">
+                                Statut</th>
+                            <th
+                                class="px-6 py-4 text-sm font-semibold text-gray-300 uppercase tracking-wider content-text text-center">
+                                Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="empruntsTableBody"
+                        class="divide-y divide-gray-700 text-gray-200 content-text transition-colors duration-500">
+                        <!-- Les lignes sont injectées via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mini-modale pour ajouter un emprunt -->
+        <div id="addModal"
+            class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-opacity">
+            <div
+                class="bg-gray-800 p-8 rounded-2xl w-full max-w-md relative shadow-2xl border border-gray-600 main-card text-white content-text">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-2 border-b border-gray-700 pb-4">
+                    <i data-feather="calendar"></i> Nouvel Emprunt
+                </h3>
+                <form id="addEmpruntForm" class="flex flex-col space-y-4">
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Utilisateur</label>
+                        <select name="utilisateur"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                            <option value="">Sélectionner Utilisateur</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Document</label>
+                        <select name="document"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                            <option value="">Sélectionner Document</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Date d'emprunt</label>
+                        <input type="date" name="dateEmprunt"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Date de retour prévue</label>
+                        <input type="date" name="dateRetour"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <button type="submit"
+                        class="mt-4 bg-emerald-600 hover:bg-emerald-700 p-3 rounded-lg font-bold shadow-lg transition">Enregistrer
+                        l'emprunt</button>
+                    <button type="button" id="closeAddModal"
+                        class="absolute top-4 right-4 text-gray-400 hover:text-white transition"><i
+                            data-feather="x"></i></button>
+                </form>
+            </div>
+        </div>
+        <!-- Mini-modale pour modifier un emprunt -->
+        <div id="editModal"
+            class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-opacity">
+            <div
+                class="bg-gray-800 p-8 rounded-2xl w-full max-w-md relative shadow-2xl border border-gray-600 main-card text-white content-text">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-2 border-b border-gray-700 pb-4">
+                    <i data-feather="edit"></i> Modifier l'Emprunt
+                </h3>
+                <form id="editEmpruntForm" class="flex flex-col space-y-4">
+                    <input type="hidden" name="id" id="editEmpruntId">
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Date d'emprunt</label>
+                        <input type="date" name="dateEmprunt" id="editDateEmprunt"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-1 block content-text">Date de retour prévue</label>
+                        <input type="date" name="dateRetour" id="editDateRetour"
+                            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-blue-500 text-white"
+                            required>
+                    </div>
+                    <!-- L'utilisateur et le document ne sont généralement pas modifiables lors d'un update d'emprunt pour simplifier -->
+                    <button type="submit"
+                        class="mt-4 bg-blue-600 hover:bg-blue-700 p-3 rounded-lg font-bold shadow-lg transition">Mettre
+                        à jour</button>
+                    <button type="button" id="closeEditModal"
+                        class="absolute top-4 right-4 text-gray-400 hover:text-white transition"><i
+                            data-feather="x"></i></button>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="/js/dashboard.js?v=2"></script>
+    <script>
+        feather.replace();
+        const addModal = document.getElementById('addModal');
+        document.getElementById('openAddModal').addEventListener('click', () => addModal.classList.remove('hidden'));
+        document.getElementById('closeAddModal').addEventListener('click', () => addModal.classList.add('hidden'));
+
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', () => {
+            const filter = searchInput.value.toLowerCase();
+            document.querySelectorAll('#empruntsTableBody tr').forEach(row => {
+                row.style.display = Array.from(row.children).some(td => td.textContent.toLowerCase().includes(filter)) ? '' : 'none';
+            });
+        });
+
+        // --- REQUÊTES API ---
+        const empruntsTableBody = document.getElementById('empruntsTableBody');
+        const userSelect = document.querySelector('select[name="utilisateur"]');
+        const docSelect = document.querySelector('select[name="document"]');
+
+        // 1. Récupérer et afficher les emprunts
+        function fetchEmprunts() {
+            fetch('/api/emprunts')
+                .then(response => response.json())
+                .then(data => {
+                    empruntsTableBody.innerHTML = '';
+
+                    // --- TRI par ID croissant ---
+                    data.sort((a, b) => a.id - b.id);
+
+                    data.forEach(emp => {
+                        const userName = emp.utilisateur ? `${emp.utilisateur.nom} ${emp.utilisateur.prenom}` : 'Inconnu';
+                        const docName = emp.document ? emp.document.titre : 'Inconnu';
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                    <td class="px-4 py-2">${emp.id}</td>
+                    <td class="px-4 py-2">${userName}</td>
+                    <td class="px-4 py-2">${docName}</td>
+                    <td class="px-4 py-2">${emp.dateEmprunt || '-'}</td>
+                    <td class="px-4 py-2">${emp.dateRetour || '-'}</td>
+                    <td class="px-4 py-2">
+                        ${emp.rendu
+                                ? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-500 text-white">Rendu</span>'
+                                : '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-500 text-white">En cours</span>'}
+                    </td>
+                    <td class="px-4 py-2 text-center text-gray-400">
+                        ${!emp.rendu ? `<button class="hover:text-green-500" onclick="window.retournerEmprunt(${emp.id})" title="Marquer comme rendu"><i data-feather="check-circle" class="pointer-events-none"></i></button>` : ''}
+                        <button class="hover:text-blue-500 ml-2" onclick="window.openEditModal(${emp.id})" title="Modifier date"><i data-feather="edit-2" class="pointer-events-none"></i></button>
+                        <button class="hover:text-red-500 ml-2" onclick="window.deleteEmprunt(${emp.id})" title="Supprimer"><i data-feather="trash-2" class="pointer-events-none"></i></button>
+                    </td>
+                `;
+                        empruntsTableBody.appendChild(row);
+                    });
+                    feather.replace();
+                })
+                .catch(error => console.error('Erreur:', error));
+        }
+
+        // 2. Peupler les listes déroulantes de la modale
+        function fetchSelectOptions() {
+            const autoDocIdStr = new URLSearchParams(window.location.search).get('autoDocId');
+            const autoDocId = autoDocIdStr ? parseInt(autoDocIdStr, 10) : null;
+
+            // Liste des utilisateurs
+            const p1 = fetch('/api/utilisateurs')
+                .then(res => res.json())
+                .then(users => {
+                    userSelect.innerHTML = '<option value="">Sélectionner Utilisateur</option>';
+                    users.forEach(u => {
+                        userSelect.innerHTML += `<option value="${u.id}">${u.nom} ${u.prenom}</option>`;
+                    });
+                });
+
+            // Liste des documents
+            const p2 = fetch('/api/documents/')
+                .then(res => res.json())
+                .then(docs => {
+                    docSelect.innerHTML = '<option value="" data-type="">Sélectionner Document</option>';
+                    docs.forEach(d => {
+                        if (d.disponible || d.id === autoDocId) {
+                            docSelect.innerHTML += `<option value="${d.id}" data-type="${d.type}">${d.titre} (${d.type || 'Doc'})</option>`;
+                        }
+                    });
+                });
+
+            Promise.all([p1, p2]).then(() => {
+                if (autoDocId) {
+                    addModal.classList.remove('hidden');
+                    docSelect.value = autoDocId;
+                    const today = new Date().toISOString().split('T')[0];
+                    document.querySelector('#addEmpruntForm input[name="dateEmprunt"]').value = today;
+                    // Nettoyer l'URL
+                    window.history.replaceState(null, null, window.location.pathname);
+                }
+            });
+        }
+
+        // Initialisation
+        fetchEmprunts();
+        fetchSelectOptions();
+
+        // 3. Ajouter un emprunt (POST)
+        const addEmpruntForm = document.getElementById('addEmpruntForm');
+        addEmpruntForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(addEmpruntForm);
+            const userId = formData.get('utilisateur');
+            const docId = formData.get('document');
+
+            // Récupérer le type depuis l'attribut data-type de l'option sélectionnée
+            const docSelectElt = document.querySelector('select[name="document"]');
+            const selectedOption = docSelectElt.options[docSelectElt.selectedIndex];
+            const docType = selectedOption.getAttribute('data-type');
+
+            const empruntData = {
+                utilisateur: { id: parseInt(userId, 10) },
+                document: {
+                    id: parseInt(docId, 10),
+                    type: docType
+                },
+                dateEmprunt: formData.get('dateEmprunt'),
+                dateRetour: formData.get('dateRetour'),
+                rendu: false
+            };
+
+            fetch('/api/emprunts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(empruntData)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert("L'emprunt a été enregistré avec succès !");
+                        addEmpruntForm.reset();
+                        addModal.classList.add('hidden');
+                        fetchEmprunts();
+                        fetchSelectOptions(); // recharger pour mettre à jour les docs dispo
+                    } else {
+                        alert("Erreur lors de l'enregistrement de l'emprunt.");
+                        console.error("Erreur ajout emprunt");
+                    }
+                });
+        });
+
+        // 4. Marquer comme rendu
+        window.retournerEmprunt = function (id) {
+            if (confirm("Marquer ce document comme rendu ?")) {
+                // Idéalement il faudrait un endpoint /rendu, ici on fait un GET puis un PUT
+                fetch(`/api/emprunts/${id}`)
+                    .then(res => res.json())
+                    .then(emprunt => {
+                        emprunt.rendu = true;
+                        return fetch(`/api/emprunts/${id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(emprunt)
+                        });
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            alert("Le document a été marqué comme rendu avec succès !");
+                            fetchEmprunts();
+                        } else {
+                            alert("Erreur lors du retour du document.");
+                        }
+                    })
+                    .catch(err => console.error(err));
+            }
+        }
+
+        // 5. Supprimer
+        window.deleteEmprunt = function (id) {
+            if (confirm("Voulez-vous vraiment supprimer cet emprunt ?")) {
+                fetch(`/api/emprunts/${id}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (response.ok) {
+                            alert("L'emprunt a été supprimé avec succès.");
+                            fetchEmprunts();
+                        } else {
+                            alert("Erreur lors de la suppression de l'emprunt.");
+                        }
+                    });
+            }
+        }
+        // 6. Édition d'un emprunt
+        const editModal = document.getElementById('editModal');
+        document.getElementById('closeEditModal').addEventListener('click', () => editModal.classList.add('hidden'));
+
+        let currentEmpruntData = null; // Pour conserver les infos liées (user/doc)
+
+        window.openEditModal = function (id) {
+            fetch(`/api/emprunts/${id}`)
+                .then(response => response.json())
+                .then(emp => {
+                    currentEmpruntData = emp;
+                    document.getElementById('editEmpruntId').value = emp.id;
+                    document.getElementById('editDateEmprunt').value = emp.dateEmprunt || '';
+                    document.getElementById('editDateRetour').value = emp.dateRetour || '';
+                    editModal.classList.remove('hidden');
+                })
+                .catch(error => console.error("Erreur récupération emprunt pour édition:", error));
+        };
+
+        const editEmpruntForm = document.getElementById('editEmpruntForm');
+        if (editEmpruntForm) {
+            editEmpruntForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const id = document.getElementById('editEmpruntId').value;
+
+                // On met à jour seulement les dates sur l'objet existant (pour conserver utilisateur et document)
+                currentEmpruntData.dateEmprunt = document.getElementById('editDateEmprunt').value;
+                currentEmpruntData.dateRetour = document.getElementById('editDateRetour').value;
+
+                fetch(`/api/emprunts/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentEmpruntData)
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            alert("L'emprunt a été mis à jour avec succès !");
+                            editModal.classList.add('hidden');
+                            fetchEmprunts();
+                        } else {
+                            alert("Erreur lors de la modification de l'emprunt.");
+                            console.error("Erreur lors de la modification");
+                        }
+                    })
+                    .catch(error => console.error('Erreur réseau / édition:', error));
+            });
+        }
+    </script>
+</body>
+
+</html>
